@@ -27,6 +27,7 @@ $ git push upstream 4.7-rc1
 Edit the repository looking for 4.5 or whatever and update it. Bump version in the following files:
 
  * runtime/Java/src/org/antlr/v4/runtime/RuntimeMetaData.java
+ * runtime/Php7/composer.json
  * runtime/Python2/setup.py
  * runtime/Python2/src/antlr4/Recognizer.py
  * runtime/Python3/setup.py
@@ -46,6 +47,7 @@ Edit the repository looking for 4.5 or whatever and update it. Bump version in t
  * tool/src/org/antlr/v4/codegen/target/CppTarget.java
  * tool/src/org/antlr/v4/codegen/target/CSharpTarget.java
  * tool/src/org/antlr/v4/codegen/target/JavaScriptTarget.java
+ * tool/src/org/antlr/v4/codegen/target/Php7Target.java
  * tool/src/org/antlr/v4/codegen/target/Python2Target.java
  * tool/src/org/antlr/v4/codegen/target/Python3Target.java
  * tool/src/org/antlr/v4/codegen/target/SwiftTarget.java

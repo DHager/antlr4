@@ -23,6 +23,16 @@ public abstract class UnicodeEscapes {
 		}
 	}
 
+	static public void appendPhpStyleEscapedCodePoint(int codePoint, StringBuilder sb) {
+		// Relevant PHP7 RFC: https://wiki.php.net/rfc/unicode_escape
+		if (Character.isSupplementaryCodePoint(codePoint)) {
+			sb.append(String.format("\\u{%08X}", codePoint));
+		}
+		else {
+			sb.append(String.format("\\u{%04X}", codePoint));
+		}
+	}
+
 	static public void appendPythonStyleEscapedCodePoint(int codePoint, StringBuilder sb) {
 		if (Character.isSupplementaryCodePoint(codePoint)) {
 			sb.append(String.format("\\U%08X", codePoint));

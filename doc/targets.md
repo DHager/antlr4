@@ -4,6 +4,7 @@ This page lists the available and upcoming ANTLR runtimes. Please note that you 
 
 * [Java](java-target.md). The [ANTLR v4 book](http://pragprog.com/book/tpantlr2/the-definitive-antlr-4-reference) has a decent summary of the runtime library.  We have added a useful XPath feature since the book was printed that lets you select bits of parse trees. See [Runtime API](http://www.antlr.org/api/Java/index.html) and [Getting Started with ANTLR v4](getting-started.md)
 * [C#](csharp-target.md)
+* [Php](php-target.md) (7.1)
 * [Python](python-target.md) (2 and 3)
 * [JavaScript](javascript-target.md)
 * [Go](go-target.md)
