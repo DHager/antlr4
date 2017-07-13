@@ -469,7 +469,7 @@ private function <currentRule.ctxType> <currentRule.name>($_p<args:{a | , <a>}>)
 
 CodeBlockForOuterMostAlt(currentOuterMostAltCodeBlock, locals, preamble, ops) ::= <<
 <if(currentOuterMostAltCodeBlock.altLabel)>$_localctx = self::createRuleContext_<currentOuterMostAltCodeBlock.altLabel; format="cap">Context($_localctx);<endif>
-enterOuterAlt($_localctx, <currentOuterMostAltCodeBlock.alt.altNum>);
+$this->enterOuterAlt($_localctx, <currentOuterMostAltCodeBlock.alt.altNum>);
 <CodeBlockForAlt(currentAltCodeBlock=currentOuterMostAltCodeBlock, ...)>
 >>
 
@@ -482,11 +482,11 @@ CodeBlockForAlt(currentAltCodeBlock, locals, preamble, ops) ::= <<
 >>
 
 LL1AltBlock(choice, preamble, alts, error) ::= <<
-setState(<choice.stateNumber>);
-_errHandler.sync($this);
+$this->setState(<choice.stateNumber>);
+$this->_errHandler->sync($this);
 <if(choice.label)><labelref(choice.label)> = _input.LT(1);<endif>
 <preamble; separator="\n">
-switch (_input.LA(1)) {
+$this->switch ($this->_input->LA(1)) {
 <choice.altLook,alts:{look,alt| <cases(ttypes=look)>
 	<alt>
 	break;}; separator="\n">
@@ -496,9 +496,9 @@ default:
 >>
 
 LL1OptionalBlock(choice, alts, error) ::= <<
-setState(<choice.stateNumber>);
-_errHandler.sync($this);
-switch (_input.LA(1)) {
+$this->setState(<choice.stateNumber>);
+$this->_errHandler->sync($this);
+switch ($this->_input->LA(1)) {
 <choice.altLook,alts:{look,alt| <cases(ttypes=look)>
 	<alt>
 	break;}; separator="\n">
@@ -508,8 +508,8 @@ default:
 >>
 
 LL1OptionalBlockSingleAlt(choice, expr, alts, preamble, error, followExpr) ::= <<
-setState(<choice.stateNumber>);
-_errHandler.sync($this);
+$this->setState(<choice.stateNumber>);
+$this->_errHandler->sync($this);
 <preamble; separator="\n">
 if (<expr>) {
 	<alts; separator="\n">
@@ -518,25 +518,25 @@ if (<expr>) {
 >>
 
 LL1StarBlockSingleAlt(choice, loopExpr, alts, preamble, iteration) ::= <<
-setState(<choice.stateNumber>);
-_errHandler.sync($this);
+$this->setState(<choice.stateNumber>);
+$this->_errHandler->sync($this);
 <preamble; separator="\n">
 while (<loopExpr>) {
 	<alts; separator="\n">
-	setState(<choice.loopBackStateNumber>);
-	_errHandler.sync($this);
+	$this->setState(<choice.loopBackStateNumber>);
+	$this->_errHandler->sync($this);
 	<iteration>
 }
 >>
 
 LL1PlusBlockSingleAlt(choice, loopExpr, alts, preamble, iteration) ::= <<
-setState(<choice.blockStartStateNumber>); <! alt block decision !>
-_errHandler.sync($this);
+$this->setState(<choice.blockStartStateNumber>); <! alt block decision !>
+$this->_errHandler->sync($this);
 <preamble; separator="\n">
 do {
 	<alts; separator="\n">
-	setState(<choice.stateNumber>); <! loopback/exit decision !>
-	_errHandler.sync($this);
+	$this->setState(<choice.stateNumber>); <! loopback/exit decision !>
+	$this->_errHandler->sync($this);
 	<iteration>
 } while ( <loopExpr> );
 >>
@@ -544,11 +544,11 @@ do {
 // LL(*) stuff
 
 AltBlock(choice, preamble, alts, error) ::= <<
-setState(<choice.stateNumber>);
-_errHandler.sync($this);
-<if(choice.label)><labelref(choice.label)> = _input.LT(1);<endif>
+$this->setState(<choice.stateNumber>);
+$this->_errHandler->sync($this);
+<if(choice.label)><labelref(choice.label)> = $this->_input->LT(1);<endif>
 <preamble; separator="\n">
-switch ( getInterpreter().adaptivePredict(_input,<choice.decision>,_ctx) ) {
+switch ( $this->getInterpreter()->adaptivePredict($this->_input,<choice.decision>,$this->_ctx) ) {
 <alts:{alt |
 case <i>:
 	<alt>
@@ -557,9 +557,9 @@ case <i>:
 >>
 
 OptionalBlock(choice, alts, error) ::= <<
-setState(<choice.stateNumber>);
-_errHandler.sync($this);
-switch ( getInterpreter().adaptivePredict(_input,<choice.decision>,_ctx) ) {
+$this->setState(<choice.stateNumber>);
+$this->_errHandler->sync($this);
+switch ( $this->getInterpreter()$this->adaptivePredict($this->_input,<choice.decision>,$this->_ctx) ) {
 <alts:{alt |
 case <i><if(!choice.ast.greedy)>+1<endif>:
 	<alt>
@@ -568,26 +568,26 @@ case <i><if(!choice.ast.greedy)>+1<endif>:
 >>
 
 StarBlock(choice, alts, sync, iteration) ::= <<
-setState(<choice.stateNumber>);
-_errHandler.sync($this);
-_alt = getInterpreter().adaptivePredict(_input,<choice.decision>,_ctx);
-while ( _alt!=<choice.exitAlt> && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
-	if ( _alt==1<if(!choice.ast.greedy)>+1<endif> ) {
+$this->setState(<choice.stateNumber>);
+$this->_errHandler->sync($this);
+$_alt = $this->getInterpreter()->adaptivePredict($this->_input,<choice.decision>,$this->_ctx);
+while ( $_alt!=<choice.exitAlt> && $_alt!= ATN::INVALID_ALT_NUMBER ) {
+	if ( $_alt==1<if(!choice.ast.greedy)>+1<endif> ) {
 		<iteration>
 		<alts> <! should only be one !>
 	}
-	setState(<choice.loopBackStateNumber>);
-	_errHandler.sync($this);
-	_alt = getInterpreter().adaptivePredict(_input,<choice.decision>,_ctx);
+	$this->setState(<choice.loopBackStateNumber>);
+	$this->_errHandler->sync($this);
+	$_alt = $this->getInterpreter()->adaptivePredict($this->_input,<choice.decision>,$this->_ctx);
 }
 >>
 
 PlusBlock(choice, alts, error) ::= <<
-setState(<choice.blockStartStateNumber>); <! alt block decision !>
-_errHandler.sync($this);
-_alt = 1<if(!choice.ast.greedy)>+1<endif>;
+$this->setState(<choice.blockStartStateNumber>); <! alt block decision !>
+$this->_errHandler->sync($this);
+$_alt = 1<if(!choice.ast.greedy)>+1<endif>;
 do {
-	switch (_alt) {
+	switch ($_alt) {
 	<alts:{alt|
 case <i><if(!choice.ast.greedy)>+1<endif>:
 	<alt>
@@ -595,10 +595,10 @@ case <i><if(!choice.ast.greedy)>+1<endif>:
 	default:
 		<error>
 	}
-	setState(<choice.loopBackStateNumber>); <! loopback/exit decision !>
-	_errHandler.sync($this);
-	_alt = getInterpreter().adaptivePredict(_input,<choice.decision>,_ctx);
-} while ( _alt!=<choice.exitAlt> && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER );
+	$this->setState(<choice.loopBackStateNumber>); <! loopback/exit decision !>
+	$this->_errHandler->sync($this);
+	$_alt = $this->getInterpreter()->adaptivePredict($this->_input,<choice.decision>,$this->_ctx);
+} while ( $_alt!=<choice.exitAlt> && $_alt!=ATN::INVALID_ALT_NUMBER );
 >>
 
 Sync(s) ::= "sync(<s.expecting.name>);"
@@ -638,13 +638,13 @@ cases(ttypes) ::= <<
 >>
 
 InvokeRule(r, argExprsChunks) ::= <<
-setState(<r.stateNumber>);
+$this->setState(<r.stateNumber>);
 <if(r.labels)><r.labels:{l | <labelref(l)> = }><endif><r.name>(<if(r.ast.options.p)><r.ast.options.p><if(argExprsChunks)>,<endif><endif><argExprsChunks>);
 >>
 
 MatchToken(m) ::= <<
-setState(<m.stateNumber>);
-<if(m.labels)><m.labels:{l | <labelref(l)> = }><endif>match(<m.name>);
+$this->setState(<m.stateNumber>);
+<if(m.labels)><m.labels:{l | <labelref(l)> = }><endif>$this->match(<m.name>);
 >>
 
 MatchSet(m, expr, capture) ::= "<CommonSetStuff(m, expr, capture, false)>"
@@ -652,22 +652,22 @@ MatchSet(m, expr, capture) ::= "<CommonSetStuff(m, expr, capture, false)>"
 MatchNotSet(m, expr, capture) ::= "<CommonSetStuff(m, expr, capture, true)>"
 
 CommonSetStuff(m, expr, capture, invert) ::= <<
-setState(<m.stateNumber>);
-<if(m.labels)><m.labels:{l | <labelref(l)> = }>_input.LT(1);<endif>
+$this->setState(<m.stateNumber>);
+<if(m.labels)><m.labels:{l | <labelref(l)> = }>$this->_input->LT(1);<endif>
 <capture>
 if ( <if(invert)><m.varName> \<= 0 || <else>!<endif>(<expr>) ) {
-	<if(m.labels)><m.labels:{l | <labelref(l)> = (Token)}><endif>_errHandler.recoverInline($this);
+	<if(m.labels)><m.labels:{l | <labelref(l)> = (Token)}><endif>$this->_errHandler->recoverInline($this);
 }
 else {
-	if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
-	_errHandler.reportMatch($this);
-	consume();
+	if ( $this->_input->LA(1)==Token::EOF ) $matchedEOF = true;
+	$this->_errHandler->reportMatch($this);
+	$this->consume();
 }
 >>
 
 Wildcard(w) ::= <<
-setState(<w.stateNumber>);
-<if(w.labels)><w.labels:{l | <labelref(l)> = }><endif>matchWildcard();
+$this->setState(<w.stateNumber>);
+<if(w.labels)><w.labels:{l | <labelref(l)> = }><endif>$this->matchWildcard();
 >>
 
 // ACTION STUFF
@@ -677,7 +677,7 @@ Action(a, foo, chunks) ::= "<chunks>"
 ArgAction(a, chunks) ::= "<chunks>"
 
 SemPred(p, chunks, failChunks) ::= <<
-setState(<p.stateNumber>);
+$this->setState(<p.stateNumber>);
 if (!(<chunks>)) throw new FailedPredicateException($this, <p.predicate><if(failChunks)>, <failChunks><elseif(p.msg)>, <p.msg><endif>);
 >>
 
@@ -689,14 +689,14 @@ catch (<catchArg>) {
 
 // lexer actions are not associated with model objects
 
-LexerSkipCommand()  ::= "skip();"
-LexerMoreCommand()  ::= "more();"
-LexerPopModeCommand() ::= "popMode();"
+LexerSkipCommand()  ::= "$this->skip();"
+LexerMoreCommand()  ::= "$this->more();"
+LexerPopModeCommand() ::= "$this->popMode();"
 
-LexerTypeCommand(arg, grammar)      ::= "_type = <arg>;"
-LexerChannelCommand(arg, grammar)   ::= "_channel = <arg>;"
-LexerModeCommand(arg, grammar)      ::= "_mode = <arg>;"
-LexerPushModeCommand(arg, grammar)  ::= "pushMode(<arg>);"
+LexerTypeCommand(arg, grammar)      ::= "$this->_type = <arg>;"
+LexerChannelCommand(arg, grammar)   ::= "$this->_channel = <arg>;"
+LexerModeCommand(arg, grammar)      ::= "$this->_mode = <arg>;"
+LexerPushModeCommand(arg, grammar)  ::= "$this->pushMode(<arg>);"
 
 ActionText(t) ::= "<t.text>"
 ActionTemplate(t) ::= "<t.st>"
@@ -737,7 +737,7 @@ NonLocalAttrRef(s)		 ::= "((<s.ruleName; format=\"cap\">Context)getInvokingConte
 SetNonLocalAttr(s, rhsChunks)	  ::=
 	"((<s.ruleName; format=\"cap\">Context)getInvokingContext(<s.ruleIndex>)).<s.name> = <rhsChunks>;"
 
-AddToLabelList(a) ::= "<ctx(a.label)>.<a.listName>.add(<labelref(a.label)>);"
+AddToLabelList(a) ::= "<ctx(a.label)>-><a.listName>->add(<labelref(a.label)>);"
 
 TokenDecl(t) ::= "<TokenLabelType()> <t.name>"
 TokenTypeDecl(t) ::= "int <t.name>;"
