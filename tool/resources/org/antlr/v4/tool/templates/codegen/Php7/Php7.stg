@@ -222,7 +222,15 @@ class <parser.name> extends <superClass; null="Parser"> {
 	/**
 	 * @var PredictionContextCache
 	 */
-	protected static $_sharedContextCache = new PredictionContextCache();
+	protected static $_sharedContextCache = null;
+
+	protected static function getSharedContextCache(){
+		if(is_null(self::$_sharedContextCache)){
+			self::$_sharedContextCache = new PredictionContextCache();
+		}
+		return self::$_sharedContextCache;
+	}
+
 	<if(parser.tokens)>
 	/**
 	 * @var int
@@ -250,7 +258,10 @@ class <parser.name> extends <superClass; null="Parser"> {
 
 	public function getSerializedATN() { return self::$_serializedATN; }
 
-	public function getATN() { return self::$_ATN; }
+	public function getATN() {
+	 	$this->prepATN();
+		return self::$_ATN;
+	}
 
 	<namedActions.members>
 	<parser:(ctor)()>
@@ -288,10 +299,13 @@ private static $_SYMBOLIC_NAMES = [
 /**
  * @var Vocabulary
  */
-public static $VOCABULARY = new VocabularyImpl(self::$_LITERAL_NAMES, self::$_SYMBOLIC_NAMES);
+private static $VOCABULARY = null;
 
-public function getVocabulary() {
-	return VOCABULARY;
+public static function getVocabulary() {
+	if(is_null(self::$VOCABULARY)){
+		self::$VOCABULARY = new VocabularyImpl(self::$_LITERAL_NAMES, self::$_SYMBOLIC_NAMES);
+	}
+	return self::$VOCABULARY;
 }
 >>
 
@@ -322,8 +336,13 @@ case <f.ruleIndex>:
 
 parser_ctor(p) ::= <<
 public function __construct(TokenStream $input) {
-	super($input);
-	$this->_interp = new ParserATNSimulator($this,self::$_ATN,self::$_decisionToDFA,self::$_sharedContextCache);
+	parent::__construct($input);
+	$this->_interp = new ParserATNSimulator(
+		$this,
+		$this->getATN(),
+		self::$_decisionToDFA,
+		self::getSharedContextCache()
+	);
 }
 >>
 
@@ -360,18 +379,20 @@ RuleFunction(currentRule,args,code,locals,ruleCtx,altLabelCtxs,namedActions,fina
 <ruleCtx>
 <altLabelCtxs:{l | <altLabelCtxs.(l)>}; separator="\n">
 
-<if(currentRule.modifiers)><currentRule.modifiers:{f | <f> }><else>
 /**
+ * @return <currentRule.ctxType>
  * @throws RecognitionException
  */
-public final <endif><currentRule.ctxType> <currentRule.name>(<args; separator=",">) {
-	<currentRule.ctxType> $_localctx = new <currentRule.ctxType>(_ctx, getState()<currentRule.args:{a | , <a.name>}>);
-	enterRule($_localctx, <currentRule.startState>, RULE_<currentRule.name>);
+<if(currentRule.modifiers)><currentRule.modifiers:{f | <f> }><else>
+public <endif> function <currentRule.name>(<args; separator=",">) {
+	$_localctx = self::createRuleContext_<currentRule.ctxType>($this->_ctx, $this->getState()<currentRule.args:{a | , <a.name>}>);
+	$this->enterRule($_localctx, <currentRule.startState>, RULE_<currentRule.name>);
 	<namedActions.init>
 	<locals; separator="\n">
 	try {
 <if(currentRule.hasLookaheadBlock)>
-		int _alt;
+		/** @var int $_alt **/
+		$_alt;
 <endif>
 		<code>
 		<postamble; separator="\n">
@@ -380,15 +401,15 @@ public final <endif><currentRule.ctxType> <currentRule.name>(<args; separator=",
 	<if(exceptions)>
 	<exceptions; separator="\n">
 	<else>
-	catch (RecognitionException re) {
-		$_localctx.exception = re;
-		_errHandler.reportError($this, re);
-		_errHandler.recover($this, re);
+	catch (RecognitionException $re) {
+		$_localctx->exception = $re;
+		$this->_errHandler->reportError($this, $re);
+		$this->_errHandler->recover($this, $re);
 	}
 	<endif>
 	finally {
 		<finallyAction>
-		exitRule();
+		$this->exitRule();
 	}
 	return $_localctx;
 }
@@ -418,7 +439,7 @@ private function <currentRule.ctxType> <currentRule.name>($_p<args:{a | , <a>}>)
 	$_parentctx = _ctx;
 	/** @var int $_parentState */
 	$_parentState = getState();
-	<currentRule.ctxType> $_localctx = new <currentRule.ctxType>(_ctx, $_parentState<currentRule.args:{a | , <a.name>}>);
+	<currentRule.ctxType> $_localctx = self::createRuleContext_<currentRule.ctxType>(_ctx, $_parentState<currentRule.args:{a | , <a.name>}>);
 	<currentRule.ctxType> $_prevctx = $_localctx;
 	/** @var int $_startState */
 	$_startState = <currentRule.startState>;
@@ -447,7 +468,7 @@ private function <currentRule.ctxType> <currentRule.name>($_p<args:{a | , <a>}>)
 >>
 
 CodeBlockForOuterMostAlt(currentOuterMostAltCodeBlock, locals, preamble, ops) ::= <<
-<if(currentOuterMostAltCodeBlock.altLabel)>$_localctx = new <currentOuterMostAltCodeBlock.altLabel; format="cap">Context($_localctx);<endif>
+<if(currentOuterMostAltCodeBlock.altLabel)>$_localctx = self::createRuleContext_<currentOuterMostAltCodeBlock.altLabel; format="cap">Context($_localctx);<endif>
 enterOuterAlt($_localctx, <currentOuterMostAltCodeBlock.alt.altNum>);
 <CodeBlockForAlt(currentAltCodeBlock=currentOuterMostAltCodeBlock, ...)>
 >>
@@ -746,7 +767,7 @@ public function <t.name>(int i) {
 >>
 ContextRuleGetterDecl(r)       ::= <<
 public function <r.ctxName> <r.name>() {
-	return getRuleContext(<r.ctxName>.class,0);
+	return getRuleContext(<r.ctxName>::class,0);
 }
 >>
 ContextRuleListGetterDecl(r)   ::= <<
@@ -754,7 +775,7 @@ ContextRuleListGetterDecl(r)   ::= <<
  * @return <r.ctxName>[]
  */
 public function <r.name>() {
-	return getRuleContexts(<r.ctxName>.class);
+	return $this->getRuleContexts(<r.ctxName>::class);
 }
 >>
 ContextRuleListIndexedGetterDecl(r)   ::= <<
@@ -763,7 +784,7 @@ ContextRuleListIndexedGetterDecl(r)   ::= <<
  * @return <r.ctxName>
  */
 public function <r.name>($i) {
-	return getRuleContext(<r.ctxName>.class,i);
+	return $this->getRuleContext(<r.ctxName>::class,i);
 }
 >>
 
@@ -779,49 +800,75 @@ ImplicitRuleLabel(ruleName)	  ::= "<ruleName>"
 ImplicitSetLabel(id)		  ::= "_tset<id>"
 ListLabelName(label)		  ::= "<label>"
 
-CaptureNextToken(d) ::= "<d.varName> = _input.LT(1);"
-CaptureNextTokenType(d) ::= "<d.varName> = _input.LA(1);"
+CaptureNextToken(d) ::= "<d.varName> = $_input->LT(1);"
+CaptureNextTokenType(d) ::= "<d.varName> = $_input->LA(1);"
 
 StructDecl(struct,ctorAttrs,attrs,getters,dispatchMethods,interfaces,extensionMembers)
 	::= <<
-// TODO migrate out of inner class
-public static class <struct.name> extends <if(contextSuperClass)><contextSuperClass><else>ParserRuleContext<endif><if(interfaces)> implements <interfaces; separator=", "><endif> {
-	<attrs:{a | public <a>;}; separator="\n">
-	<getters:{g | <g>}; separator="\n">
-	<if(ctorAttrs)>
-	/**
-	 * @param ParserRuleContext $parent
-	 * @param int $invokingState
-	 */
-	public function <struct.name>(ParserRuleContext $parent, int $invokingState) { super($parent, $invokingState); }
-	<endif>
-	/**
-	 * @param ParserRuleContext $parent
-	 * @param int $invokingState
-	 */
-	public function <struct.name>(ParserRuleContext $parent, $invokingState<ctorAttrs:{a | , <a>}>) {
-		super($parent, $invokingState);
-		<struct.ctorAttrs:{a | $this-><a.name> = <a.name>;}; separator="\n">
-	}
-	public function getRuleIndex() { return RULE_<struct.derivedFromName>; }
-<if(struct.provideCopyFrom)> <! don't need copy unless we have subclasses !>
-	public <struct.name>() { }
-	public function copyFrom(<struct.name> ctx) {
-		super.copyFrom(ctx);
-		<struct.attrs:{a | $this-><a.name> = ctx.<a.name>;}; separator="\n">
-	}
-<endif>
-	<dispatchMethods; separator="\n">
-	<extensionMembers; separator="\n">
+
+/**
+ * Warning: This is a hacky workaround because PHP doesn't support nested classes.
+ * @return <if(contextSuperClass)><contextSuperClass><else>ParserRuleContext<endif>
+ */
+public static function createRuleContext_<struct.name>(ParserRuleContext $parent, $invokingState){
+
+	$rule = new class($parent, $invokingState) extends <if(contextSuperClass)><contextSuperClass><else>ParserRuleContext<endif><if(interfaces)> implements <interfaces; separator=", "><endif> {
+		<attrs:{a | public <a>;}; separator="\n">
+		<getters:{g | <g>}; separator="\n">
+		<if(ctorAttrs)>
+		/**
+		 * @param ParserRuleContext $parent
+		 * @param int $invokingState
+		 */
+		public function <struct.name>(ParserRuleContext $parent, $invokingState) {
+			parent::__construct($parent, $invokingState);
+		}
+		<endif>
+		/**
+		 * @param ParserRuleContext $parent
+		 * @param int $invokingState
+		 */
+		public function <struct.name>(ParserRuleContext $parent, $invokingState<ctorAttrs:{a | , <a>}>) {
+			parent::__construct($parent, $invokingState);
+			<struct.ctorAttrs:{a | $this-><a.name> = <a.name>;}; separator="\n">
+		}
+		public function getRuleIndex() { return RULE_<struct.derivedFromName>; }
+		<if(struct.provideCopyFrom)> <! don't need copy unless we have subclasses !>
+		public function __construct() { }
+		/**
+		 * @param object $ctx Anonymous class satisfying <struct.name>
+		 */
+		public function copyFrom($ctx) {
+			parent::copyFrom(ctx);
+			<struct.attrs:{a | $this-><a.name> = ctx.<a.name>;}; separator="\n">
+		}
+		<endif>
+		<dispatchMethods; separator="\n">
+		<extensionMembers; separator="\n">
+	};
+	//TODO consider caching+cloning a prototype when method is called to avoid making many anonymous classdefs
+	return $rule;
 }
 >>
 
 AltLabelStructDecl(struct,attrs,getters,dispatchMethods) ::= <<
-public static class <struct.name> extends <currentRule.name; format="cap">Context {
-	<attrs:{a | public <a>;}; separator="\n">
-	<getters:{g | <g>}; separator="\n">
-	public <struct.name>(<currentRule.name; format="cap">Context ctx) { copyFrom(ctx); }
-	<dispatchMethods; separator="\n">
+
+/**
+ * Warning: This is a hacky workaround because PHP doesn't support nested classes.
+ * @return <if(contextSuperClass)><contextSuperClass><else>ParserRuleContext<endif>
+ */
+public static function createRuleContext_<struct.name>($ctx){
+	$rule = new class($ctx) extends <currentRule.name; format="cap">Context {
+		<attrs:{a | public <a>;}; separator="\n">
+		<getters:{g | <g>}; separator="\n">
+		/**
+		 * @param object $ctx Anonymous class satisfying <currentRule.name; format="cap">Context
+		 */
+		public __construct($ctx) { $this->copyFrom(ctx); }
+		<dispatchMethods; separator="\n">
+	};
+	//TODO consider caching+cloning a prototype when method is called to avoid making many anonymous classdefs
+	return $rule;
 }
 >>
 
@@ -830,7 +877,9 @@ ListenerDispatchMethod(method) ::= <<
  * @param ParseTreeListener $listener
  */
 public function <if(method.isEnter)>enter<else>exit<endif>Rule(ParseTreeListener $listener) {
-	if ( $listener instanceof <parser.grammarName>Listener ) {((<parser.grammarName>Listener)$listener).<if(method.isEnter)>enter<else>exit<endif><struct.derivedFromName; format="cap">($this);
+	if ( $listener instanceof <parser.grammarName>Listener ) {
+		$listener-><if(method.isEnter)>enter<else>exit<endif><struct.derivedFromName; format="cap">($this);
+	}
 }
 >>
 
@@ -841,9 +890,9 @@ VisitorDispatchMethod(method) ::= <<
  */
 public function accept(ParseTreeVisitor $visitor) {
 	if ( $visitor instanceof <parser.grammarName>Visitor ) {
-		return $visitor.visit<struct.derivedFromName; format="cap">($this);
+		return $visitor->visit<struct.derivedFromName; format="cap">($this);
 	} else {
-		return $visitor.visitChildren($this);
+		return $visitor->visitChildren($this);
 	}
 }
 >>
@@ -862,7 +911,7 @@ recRuleSetReturnAction(src,name)	  ::= "$<name>=$<src>.<name>;"
 recRuleSetStopToken()                 ::= "_ctx.stop = _input.LT(-1);"
 
 recRuleAltStartAction(ruleName, ctxName, label, isListLabel) ::= <<
-$_localctx = new <ctxName>Context($_parentctx, $_parentState);
+$_localctx = self::createRuleContext_<ctxName>Context($_parentctx, $_parentState);
 <if(label)>
 <if(isListLabel)>
 $_localctx.<label>.add($_prevctx);
@@ -875,7 +924,7 @@ pushNewRecursionContext($_localctx, $_startState, RULE_<ruleName>);
 >>
 
 recRuleLabeledAltStartAction(ruleName, currentAltLabel, label, isListLabel) ::= <<
-$_localctx = new <currentAltLabel; format="cap">Context(new <ruleName; format="cap">Context($_parentctx, $_parentState));
+$_localctx = self::createRuleContext_<currentAltLabel; format="cap">Context(new <ruleName; format="cap">Context($_parentctx, $_parentState));
 <if(label)>
 <if(isListLabel)>
 ((<currentAltLabel; format="cap">Context)$_localctx).<label>.add($_prevctx);
@@ -887,7 +936,7 @@ pushNewRecursionContext($_localctx, $_startState, RULE_<ruleName>);
 >>
 
 recRuleReplaceContext(ctxName) ::= <<
-$_localctx = new <ctxName>Context($_localctx);
+$_localctx = self::createRuleContext_<ctxName>Context($_localctx);
 _ctx = $_localctx;
 $_prevctx = $_localctx;
 >>
@@ -930,6 +979,13 @@ class <lexer.name> extends <superClass; null="Lexer"> {
 	 * @var PredictionContextCache
 	 */
 	protected static $_sharedContextCache = new PredictionContextCache();
+
+	protected static function getSharedContextCache(){
+		if(is_null(self::$_sharedContextCache)){
+			self::$_sharedContextCache = new PredictionContextCache();
+		}
+		return self::$_sharedContextCache;
+	}
 
 	/**
 	 * @var int
@@ -976,8 +1032,13 @@ class <lexer.name> extends <superClass; null="Lexer"> {
 	<namedActions.members>
 
 	public function __construct(CharStream $input) {
-		super($input);
-		$this->_interp = new LexerATNSimulator($this,self::$_ATN,self::$_decisionToDFA,self::$_sharedContextCache);
+			parent::__construct($input);
+			$this->_interp = new LexerATNSimulator(
+			$this,
+			self::$_ATN,
+			self::$_decisionToDFA,
+			self::$_sharedContextCache
+		);
 	}
 
 	public function getGrammarFileName() { return "<lexer.grammarFileName>"; }
@@ -1029,8 +1090,15 @@ public static $_serializedATN =
 /**
  * @var ATN
  */
-public static $_ATN =
-	new ATNDeserializer()->deserialize(self::$_serializedATN->toCharArray());
+protected static $_ATN = null;
+
+	protected function prepATN(){
+		if(is_null(self::$_ATN)){
+			self::$_ATN = new ATNDeserializer()->deserialize($this->getSerializedATN()->toCharArray());
+		}
+	}
+
+//TODO
 static {
 	_decisionToDFA = new DFA[_ATN->getNumberOfDecisions()];
 	for ($i = 0; $i \< _ATN->getNumberOfDecisions(); $i++) {
