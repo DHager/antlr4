@@ -385,7 +385,7 @@ RuleFunction(currentRule,args,code,locals,ruleCtx,altLabelCtxs,namedActions,fina
  */
 <if(currentRule.modifiers)><currentRule.modifiers:{f | <f> }><else>
 public <endif> function <currentRule.name>(<args; separator=",">) {
-	$_localctx = self::createRuleContext_<currentRule.ctxType>($this->_ctx, $this->getState()<currentRule.args:{a | , <a.name>}>);
+	$_localctx = new <currentRule.ctxType>($_ctx, $this->getState()<currentRule.args:{a | , <a.name>}>);
 	$this->enterRule($_localctx, <currentRule.startState>, RULE_<currentRule.name>);
 	<namedActions.init>
 	<locals; separator="\n">
@@ -439,7 +439,7 @@ private function <currentRule.ctxType> <currentRule.name>($_p<args:{a | , <a>}>)
 	$_parentctx = _ctx;
 	/** @var int $_parentState */
 	$_parentState = getState();
-	<currentRule.ctxType> $_localctx = self::createRuleContext_<currentRule.ctxType>(_ctx, $_parentState<currentRule.args:{a | , <a.name>}>);
+	<currentRule.ctxType> $_localctx = new <currentRule.ctxType>($_ctx, $_parentState<currentRule.args:{a | , <a.name>}>);
 	<currentRule.ctxType> $_prevctx = $_localctx;
 	/** @var int $_startState */
 	$_startState = <currentRule.startState>;
@@ -468,7 +468,7 @@ private function <currentRule.ctxType> <currentRule.name>($_p<args:{a | , <a>}>)
 >>
 
 CodeBlockForOuterMostAlt(currentOuterMostAltCodeBlock, locals, preamble, ops) ::= <<
-<if(currentOuterMostAltCodeBlock.altLabel)>$_localctx = self::createRuleContext_<currentOuterMostAltCodeBlock.altLabel; format="cap">Context($_localctx);<endif>
+<if(currentOuterMostAltCodeBlock.altLabel)>$_localctx = new <currentOuterMostAltCodeBlock.altLabel; format="cap">Context($_localctx);<endif>
 $this->enterOuterAlt($_localctx, <currentOuterMostAltCodeBlock.alt.altNum>);
 <CodeBlockForAlt(currentAltCodeBlock=currentOuterMostAltCodeBlock, ...)>
 >>
@@ -806,69 +806,54 @@ CaptureNextTokenType(d) ::= "<d.varName> = $_input->LA(1);"
 StructDecl(struct,ctorAttrs,attrs,getters,dispatchMethods,interfaces,extensionMembers)
 	::= <<
 
-/**
- * Warning: This is a hacky workaround because PHP doesn't support nested classes.
- * @return <if(contextSuperClass)><contextSuperClass><else>ParserRuleContext<endif>
- */
-public static function createRuleContext_<struct.name>(ParserRuleContext $parent, $invokingState){
-
-	$rule = new class($parent, $invokingState) extends <if(contextSuperClass)><contextSuperClass><else>ParserRuleContext<endif><if(interfaces)> implements <interfaces; separator=", "><endif> {
-		<attrs:{a | public <a>;}; separator="\n">
-		<getters:{g | <g>}; separator="\n">
-		<if(ctorAttrs)>
-		/**
-		 * @param ParserRuleContext $parent
-		 * @param int $invokingState
-		 */
-		public function <struct.name>(ParserRuleContext $parent, $invokingState) {
-			parent::__construct($parent, $invokingState);
-		}
-		<endif>
-		/**
-		 * @param ParserRuleContext $parent
-		 * @param int $invokingState
-		 */
-		public function <struct.name>(ParserRuleContext $parent, $invokingState<ctorAttrs:{a | , <a>}>) {
-			parent::__construct($parent, $invokingState);
-			<struct.ctorAttrs:{a | $this-><a.name> = <a.name>;}; separator="\n">
-		}
-		public function getRuleIndex() { return RULE_<struct.derivedFromName>; }
-		<if(struct.provideCopyFrom)> <! don't need copy unless we have subclasses !>
-		public function __construct() { }
-		/**
-		 * @param object $ctx Anonymous class satisfying <struct.name>
-		 */
-		public function copyFrom($ctx) {
-			parent::copyFrom(ctx);
-			<struct.attrs:{a | $this-><a.name> = ctx.<a.name>;}; separator="\n">
-		}
-		<endif>
-		<dispatchMethods; separator="\n">
-		<extensionMembers; separator="\n">
-	};
-	//TODO consider caching+cloning a prototype when method is called to avoid making many anonymous classdefs
-	return $rule;
+//TODO namespace
+class <struct.name> extends <if(contextSuperClass)><contextSuperClass><else>ParserRuleContext<endif><if(interfaces)> implements <interfaces; separator=", "><endif> {
+    <attrs:{a | public <a>;}; separator="\n">
+    <getters:{g | <g>}; separator="\n">
+    <if(ctorAttrs)>
+    /**
+     * @param ParserRuleContext $parent
+     * @param int $invokingState
+     */
+    public function __construct(ParserRuleContext $parent, $invokingState) {
+        parent::__construct($parent, $invokingState);
+    }
+    <endif>
+    /**
+     * @param ParserRuleContext $parent
+     * @param int $invokingState
+     */
+    public function __construct(ParserRuleContext $parent, $invokingState<ctorAttrs:{a | , <a>}>) {
+        parent::__construct($parent, $invokingState);
+        <struct.ctorAttrs:{a | $this-><a.name> = <a.name>;}; separator="\n">
+    }
+    public function getRuleIndex() { return RULE_<struct.derivedFromName>; }
+    <if(struct.provideCopyFrom)> <! don't need copy unless we have subclasses !>
+    public function __construct() { }
+    /**
+     * @param <struct.name> $ctx
+     */
+    public function copyFrom($ctx) {
+        parent::copyFrom(ctx);
+        <struct.attrs:{a | $this-><a.name> = ctx.<a.name>;}; separator="\n">
+    }
+    <endif>
+    <dispatchMethods; separator="\n">
+    <extensionMembers; separator="\n">
 }
+
 >>
 
 AltLabelStructDecl(struct,attrs,getters,dispatchMethods) ::= <<
-
-/**
- * Warning: This is a hacky workaround because PHP doesn't support nested classes.
- * @return <if(contextSuperClass)><contextSuperClass><else>ParserRuleContext<endif>
- */
-public static function createRuleContext_<struct.name>($ctx){
-	$rule = new class($ctx) extends <currentRule.name; format="cap">Context {
-		<attrs:{a | public <a>;}; separator="\n">
-		<getters:{g | <g>}; separator="\n">
-		/**
-		 * @param object $ctx Anonymous class satisfying <currentRule.name; format="cap">Context
-		 */
-		public __construct($ctx) { $this->copyFrom(ctx); }
-		<dispatchMethods; separator="\n">
-	};
-	//TODO consider caching+cloning a prototype when method is called to avoid making many anonymous classdefs
-	return $rule;
+//TODO namespace
+class <struct.name> extends <currentRule.name; format="cap">Context {
+    <attrs:{a | public <a>;}; separator="\n">
+    <getters:{g | <g>}; separator="\n">
+    /**
+     * @param <currentRule.name; format="cap">Context $ctx
+     */
+    public __construct($ctx) { $this->copyFrom(ctx); }
+    <dispatchMethods; separator="\n">
 }
 >>
 
@@ -911,7 +896,7 @@ recRuleSetReturnAction(src,name)	  ::= "$<name>=$<src>.<name>;"
 recRuleSetStopToken()                 ::= "_ctx.stop = _input.LT(-1);"
 
 recRuleAltStartAction(ruleName, ctxName, label, isListLabel) ::= <<
-$_localctx = self::createRuleContext_<ctxName>Context($_parentctx, $_parentState);
+$_localctx = new <ctxName>Context($_parentctx, $_parentState);
 <if(label)>
 <if(isListLabel)>
 $_localctx.<label>.add($_prevctx);
@@ -924,7 +909,7 @@ pushNewRecursionContext($_localctx, $_startState, RULE_<ruleName>);
 >>
 
 recRuleLabeledAltStartAction(ruleName, currentAltLabel, label, isListLabel) ::= <<
-$_localctx = self::createRuleContext_<currentAltLabel; format="cap">Context(new <ruleName; format="cap">Context($_parentctx, $_parentState));
+$_localctx = new <currentAltLabel; format="cap">Context(new <ruleName; format="cap">Context($_parentctx, $_parentState));
 <if(label)>
 <if(isListLabel)>
 ((<currentAltLabel; format="cap">Context)$_localctx).<label>.add($_prevctx);
@@ -936,7 +921,7 @@ pushNewRecursionContext($_localctx, $_startState, RULE_<ruleName>);
 >>
 
 recRuleReplaceContext(ctxName) ::= <<
-$_localctx = self::createRuleContext_<ctxName>Context($_localctx);
+$_localctx = new <ctxName>Context($_localctx);
 _ctx = $_localctx;
 $_prevctx = $_localctx;
 >>
