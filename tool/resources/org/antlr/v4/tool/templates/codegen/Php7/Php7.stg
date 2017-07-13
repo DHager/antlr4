@@ -1079,11 +1079,11 @@ protected static $_ATN = null;
 
 	protected function prepATN(){
 		if(is_null(self::$_ATN)){
-			self::$_ATN = new ATNDeserializer()->deserialize($this->getSerializedATN()->toCharArray());
+			self::$_ATN = (new ATNDeserializer())->deserialize($this->getSerializedATN()->toCharArray());
 		}
 	}
 
-//TODO
+/* @TODO
 static {
 	_decisionToDFA = new DFA[_ATN->getNumberOfDecisions()];
 	for ($i = 0; $i \< _ATN->getNumberOfDecisions(); $i++) {
@@ -1093,6 +1093,7 @@ static {
 <!	System.out.println(dot.getDOT(_ATN.decisionToState.get(0), ruleNames, false));!>
 <!	System.out.println(dot.getDOT(_ATN.ruleToStartState[2], ruleNames, false));!>
 }
+*/
 >>
 
 /** Using a type to init value map, try to init a type; if not in table
