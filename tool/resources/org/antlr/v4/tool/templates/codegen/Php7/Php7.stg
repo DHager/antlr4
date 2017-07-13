@@ -44,7 +44,7 @@ ParserFile(file, parser, namedActions, contextSuperClass) ::= <<
 namespace <file.genPackage>;
 <endif>
 <namedActions.header>
-use Antlr4;
+use Antlr4\Parser;
 <parser>
 >>
 
@@ -244,7 +244,7 @@ public class <parser.name> extends <superClass; null="Parser"> {
 
 	<vocabulary(parser.literalNames, parser.symbolicNames)>
 
-	public function getGrammarFileName() { return "<parser.grammarFileName; format="java-escape">"; }
+	public function getGrammarFileName() { return "<parser.grammarFileName>"; }
 
 	public function getRuleNames() { return self::$ruleNames; }
 
