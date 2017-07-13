@@ -60,7 +60,7 @@ use Antlr4\Tree\ParseTreeListener;
  * This interface defines a complete listener for a parse tree produced by
  * {@link <file.parserName>}.
  */
-public interface <file.grammarName>Listener extends ParseTreeListener {
+interface <file.grammarName>Listener extends ParseTreeListener {
 	<file.listenerNames:{lname |
 /**
 <if(file.listenerLabelRuleNames.(lname))>
@@ -101,7 +101,7 @@ use Antlr4\Tree\TerminalNode;
  * which can be extended to create a listener which only needs to handle a subset
  * of the available methods.
  */
-public class <file.grammarName>BaseListener implements <file.grammarName>Listener {
+class <file.grammarName>BaseListener implements <file.grammarName>Listener {
 	<file.listenerNames:{lname |
 /**
  * {@inheritDoc\}
@@ -158,7 +158,7 @@ use Antlr4\Tree\ParseTreeVisitor;
  * @param \<T> The return type of the visit operation. Use {@link Void} for
  * operations with no return type.
  */
-public interface <file.grammarName>Visitor\<T> extends ParseTreeVisitor\<T> {
+interface <file.grammarName>Visitor\<T> extends ParseTreeVisitor\<T> {
 	<file.visitorNames:{lname |
 /**
 <if(file.visitorLabelRuleNames.(lname))>
@@ -190,7 +190,7 @@ use Antlr4\Tree\AbstractParseTreeVisitor;
  * @param \<T> The return type of the visit operation. Use {@link Void} for
  * operations with no return type.
  */
-public class <file.grammarName>BaseVisitor\<T> extends AbstractParseTreeVisitor\<T> implements <file.grammarName>Visitor\<T> {
+class <file.grammarName>BaseVisitor\<T> extends AbstractParseTreeVisitor\<T> implements <file.grammarName>Visitor\<T> {
 	<file.visitorNames:{lname |
 /**
  * {@inheritDoc\}
@@ -212,7 +212,7 @@ Parser(parser, funcs, atn, sempredFuncs, superClass) ::= <<
 >>
 
 Parser_(parser, funcs, atn, sempredFuncs, ctor, superClass) ::= <<
-public class <parser.name> extends <superClass; null="Parser"> {
+class <parser.name> extends <superClass; null="Parser"> {
 
 	/**
 	 * @var DFA[]
@@ -919,7 +919,7 @@ use Antlr4\Misc\Utils;
 >>
 
 Lexer(lexer, atn, actionFuncs, sempredFuncs, superClass) ::= <<
-public class <lexer.name> extends <superClass; null="Lexer"> {
+class <lexer.name> extends <superClass; null="Lexer"> {
 
 	/**
 	 * @var DFA[]
