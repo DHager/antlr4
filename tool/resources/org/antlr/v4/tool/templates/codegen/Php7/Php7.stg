@@ -281,6 +281,9 @@ case <f.ruleIndex>:
 
 	<atn>
 }
+
+<funcs :{ func | <func.ruleCtx> }>
+
 >>
 
 vocabulary(literalNames, symbolicNames) ::= <<
@@ -376,7 +379,6 @@ case <index>:
 
 RuleFunction(currentRule,args,code,locals,ruleCtx,altLabelCtxs,namedActions,finallyAction,postamble,exceptions) ::= <<
 
-<ruleCtx>
 <altLabelCtxs:{l | <altLabelCtxs.(l)>}; separator="\n">
 
 /**
@@ -419,7 +421,6 @@ LeftRecursiveRuleFunction(currentRule,args,code,locals,ruleCtx,altLabelCtxs,
 	namedActions,finallyAction,postamble) ::=
 <<
 
-<ruleCtx>
 <altLabelCtxs:{l | <altLabelCtxs.(l)>}; separator="\n">
 
 /**
