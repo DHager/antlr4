@@ -387,7 +387,7 @@ RuleFunction(currentRule,args,code,locals,ruleCtx,altLabelCtxs,namedActions,fina
  */
 <if(currentRule.modifiers)><currentRule.modifiers:{f | <f> }><else>
 public <endif> function <currentRule.name>(<args; separator=",">) {
-	$_localctx = new <currentRule.ctxType>($_ctx, $this->getState()<currentRule.args:{a | , <a.name>}>);
+	$_localctx = new <currentRule.ctxType>($this->_ctx, $this->getState()<currentRule.args:{a | , <a.name>}>);
 	$this->enterRule($_localctx, <currentRule.startState>, RULE_<currentRule.name>);
 	<namedActions.init>
 	<locals; separator="\n">
@@ -440,7 +440,7 @@ private function <currentRule.ctxType> <currentRule.name>($_p<args:{a | , <a>}>)
 	$_parentctx = _ctx;
 	/** @var int $_parentState */
 	$_parentState = getState();
-	<currentRule.ctxType> $_localctx = new <currentRule.ctxType>($_ctx, $_parentState<currentRule.args:{a | , <a.name>}>);
+	<currentRule.ctxType> $_localctx = new <currentRule.ctxType>($this->_ctx, $_parentState<currentRule.args:{a | , <a.name>}>);
 	<currentRule.ctxType> $_prevctx = $_localctx;
 	/** @var int $_startState */
 	$_startState = <currentRule.startState>;
@@ -767,8 +767,11 @@ public function <t.name>(int i) {
 }
 >>
 ContextRuleGetterDecl(r)       ::= <<
-public function <r.ctxName> <r.name>() {
-	return getRuleContext(<r.ctxName>::class,0);
+/**
+ * @return <r.ctxName>
+ */
+public function  <r.name>() {
+	return $this->getRuleContext(<r.ctxName>::class,0);
 }
 >>
 ContextRuleListGetterDecl(r)   ::= <<
@@ -807,7 +810,6 @@ CaptureNextTokenType(d) ::= "<d.varName> = $_input->LA(1);"
 StructDecl(struct,ctorAttrs,attrs,getters,dispatchMethods,interfaces,extensionMembers)
 	::= <<
 
-//TODO namespace
 class <struct.name> extends <if(contextSuperClass)><contextSuperClass><else>ParserRuleContext<endif><if(interfaces)> implements <interfaces; separator=", "><endif> {
     <attrs:{a | public <a>;}; separator="\n">
     <getters:{g | <g>}; separator="\n">
@@ -846,7 +848,7 @@ class <struct.name> extends <if(contextSuperClass)><contextSuperClass><else>Pars
 >>
 
 AltLabelStructDecl(struct,attrs,getters,dispatchMethods) ::= <<
-//TODO namespace
+
 class <struct.name> extends <currentRule.name; format="cap">Context {
     <attrs:{a | public <a>;}; separator="\n">
     <getters:{g | <g>}; separator="\n">
