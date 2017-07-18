@@ -204,6 +204,7 @@ public function visit<lname; format="cap">(<file.parserName>\\<lname; format="ca
 
 fileHeader(grammarFileName, ANTLRVersion) ::= <<
 \<?php
+declare(strict_types=1);
 // Generated from <grammarFileName> by ANTLR <ANTLRVersion>
 >>
 
@@ -222,9 +223,9 @@ class <parser.name> extends <superClass; null="Parser"> {
 	/**
 	 * @var PredictionContextCache
 	 */
-	protected static $_sharedContextCache = null;
+	protected static $_sharedContextCache;
 
-	protected static function getSharedContextCache(){
+	protected static function getSharedContextCache() : PredictionContextCache{
 		if(is_null(self::$_sharedContextCache)){
 			self::$_sharedContextCache = new PredictionContextCache();
 		}
@@ -232,17 +233,13 @@ class <parser.name> extends <superClass; null="Parser"> {
 	}
 
 	<if(parser.tokens)>
-	/**
-	 * @var int
-	 */
-	public static
-		<parser.tokens:{k | $<k>=<parser.tokens.(k)>}; separator=", ", wrap, anchor>;
+	<parser.tokens:{k | public const <k>=<parser.tokens.(k)>}; separator=";\n", anchor>;
 	<endif>
-	/**
-	 * @var int
-	 */
-	public static
-		<parser.rules:{r | $RULE_<r.name> = <r.index>}; separator=", ", wrap, anchor>;
+
+	<if(parser.rules)>
+	<parser.rules:{r | public const RULE_<r.name> = <r.index>}; separator=";\n", anchor>;
+	<endif>
+
 	/**
 	 * @var string[]
 	 */
@@ -252,11 +249,11 @@ class <parser.name> extends <superClass; null="Parser"> {
 
 	<vocabulary(parser.literalNames, parser.symbolicNames)>
 
-	public function getGrammarFileName() { return "<parser.grammarFileName>"; }
+	public function getGrammarFileName() : string { return "<parser.grammarFileName>"; }
 
 	public function getRuleNames() { return self::$ruleNames; }
 
-	public function getSerializedATN() { return self::$_serializedATN; }
+	public function getSerializedATN() : string { return self::$_serializedATN; }
 
 	public function getATN() {
 	 	$this->prepATN();
@@ -268,11 +265,18 @@ class <parser.name> extends <superClass; null="Parser"> {
 	<funcs; separator="\n">
 
 <if(sempredFuncs)>
-	public function sempred(RuleContext $_localctx, int ruleIndex, int predIndex) {
-		switch (ruleIndex) {
+	/**
+	 * @param RuleContext $_localctx
+	 * @param int $ruleIndex
+	 * @param int $predIndex
+	 * @return bool
+	 */
+	public function sempred(RuleContext $_localctx, int $ruleIndex, int $predIndex) : bool {
+		switch ($ruleIndex) {
 		<parser.sempredFuncs.values:{f|
 case <f.ruleIndex>:
-	return <f.name>_sempred((<f.ctxType>)$_localctx, predIndex);}; separator="\n">
+    assert( $_localctx instanceof <f.ctxType>);
+	return $this-><f.name>_sempred($_localctx, $predIndex);}; separator="\n">
 		}
 		return true;
 	}
@@ -304,7 +308,7 @@ private static $_SYMBOLIC_NAMES = [
  */
 private static $VOCABULARY = null;
 
-public static function getVocabulary() {
+public static function getVocabulary() : Vocabulary {
 	if(is_null(self::$VOCABULARY)){
 		self::$VOCABULARY = new VocabularyImpl(self::$_LITERAL_NAMES, self::$_SYMBOLIC_NAMES);
 	}
@@ -314,22 +318,31 @@ public static function getVocabulary() {
 
 dumpActions(recog, argFuncs, actionFuncs, sempredFuncs) ::= <<
 <if(actionFuncs)>
-public function action(RuleContext $_localctx, int ruleIndex, int actionIndex) {
-	switch (ruleIndex) {
+public function action(RuleContext $_localctx, int $ruleIndex, int actionIndex) {
+	switch ($ruleIndex) {
 	<recog.actionFuncs.values:{f|
 case <f.ruleIndex>:
-	<f.name>_action((<f.ctxType>)$_localctx, actionIndex);
+    assert($_localctx instanceof <f.ctxType>);
+	<f.name>_action($_localctx, actionIndex);
 	break;}; separator="\n">
 	}
 }
 <actionFuncs.values; separator="\n">
 <endif>
 <if(sempredFuncs)>
-public function sempred(RuleContext $_localctx, int ruleIndex, int predIndex) {
-	switch (ruleIndex) {
+/**
+     * @param RuleContext $_localctx
+     * @param int $ruleIndex
+     * @param int $predIndex
+     * @return bool
+     */
+public function sempred(RuleContext $_localctx, int $ruleIndex, int $predIndex) : bool
+{
+	switch ($ruleIndex) {
 	<recog.sempredFuncs.values:{f|
 case <f.ruleIndex>:
-	return <f.name>_sempred((<f.ctxType>)$_localctx, predIndex);}; separator="\n">
+    assert($_localctx instanceof <f.ctxType>);
+	return <f.name>_sempred($_localctx, $predIndex);}; separator="\n">
 	}
 	return true;
 }
@@ -367,8 +380,9 @@ case <index>:
  * overriding implementation impossible to maintain.
  */
 RuleSempredFunction(r, actions) ::= <<
-private boolean <r.name>_sempred(<r.ctxType> $_localctx, int predIndex) {
-	switch (predIndex) {
+private function <r.name>_sempred(<r.ctxType> $_localctx, int $predIndex) : bool
+{
+	switch ($predIndex) {
 	<actions:{index|
 case <index>:
 	return <actions.(index)>;}; separator="\n">
@@ -386,9 +400,10 @@ RuleFunction(currentRule,args,code,locals,ruleCtx,altLabelCtxs,namedActions,fina
  * @throws RecognitionException
  */
 <if(currentRule.modifiers)><currentRule.modifiers:{f | <f> }><else>
-public <endif> function <currentRule.name>(<args; separator=",">) {
+public <endif>function <currentRule.name>(<args; separator=",">) : <currentRule.ctxType>
+{
 	$_localctx = new <currentRule.ctxType>($this->_ctx, $this->getState()<currentRule.args:{a | , <a.name>}>);
-	$this->enterRule($_localctx, <currentRule.startState>, RULE_<currentRule.name>);
+	$this->enterRule($_localctx, <currentRule.startState>, self::RULE_<currentRule.name>);
 	<namedActions.init>
 	<locals; separator="\n">
 	try {
@@ -423,46 +438,55 @@ LeftRecursiveRuleFunction(currentRule,args,code,locals,ruleCtx,altLabelCtxs,
 
 <altLabelCtxs:{l | <altLabelCtxs.(l)>}; separator="\n">
 
-/**
- * @throws RecognitionException
- */
 <if(currentRule.modifiers)><currentRule.modifiers:{f | <f> }><else>
-public final<endif> function <currentRule.ctxType> <currentRule.name>(<args; separator=", ">) {
+/**
+ * @return <currentRule.ctxType>
+ * @throws RecognitionException
+ * @todo Fix issue w/ no overloading in PHP
+ */
+public final<endif> function <currentRule.name>(<args; separator=", ">) : <currentRule.ctxType>
+{
 	return <currentRule.name>(0<currentRule.args:{a | , <a.name>}>);
 }
 
 /**
  * @param int $_p
+ * @return <currentRule.ctxType>
  * @throws RecognitionException
+ * @todo address lack of overloading
  */
-private function <currentRule.ctxType> <currentRule.name>($_p<args:{a | , <a>}>) {
+private function <currentRule.name>(int $_p<args:{a | , <a>}>) : <currentRule.ctxType>
+{
 	/** @var ParserRuleContext _parentctx */
-	$_parentctx = _ctx;
+	$_parentctx = $this->_ctx;
 	/** @var int $_parentState */
 	$_parentState = getState();
-	<currentRule.ctxType> $_localctx = new <currentRule.ctxType>($this->_ctx, $_parentState<currentRule.args:{a | , <a.name>}>);
-	<currentRule.ctxType> $_prevctx = $_localctx;
+	/** @var <currentRule.ctxType> $_localctx **/
+	$_localctx = new <currentRule.ctxType>($this->_ctx, $_parentState<currentRule.args:{a | , <a.name>}>);
+	/** @var <currentRule.ctxType> $_prevctx **/
+	$_prevctx = $_localctx;
 	/** @var int $_startState */
 	$_startState = <currentRule.startState>;
-	enterRecursionRule($_localctx, <currentRule.startState>, RULE_<currentRule.name>, $_p);
+	$this->enterRecursionRule($_localctx, <currentRule.startState>, self::RULE_<currentRule.name>, $_p);
 	<namedActions.init>
 	<locals; separator="\n">
 	try {
 <if(currentRule.hasLookaheadBlock)>
-		int _alt;
+		/** @var int $_alt **/
+		$_alt;
 <endif>
 		<code>
 		<postamble; separator="\n">
 		<namedActions.after>
 	}
-	catch (RecognitionException re) {
-		$_localctx.exception = re;
-		_errHandler.reportError($this, re);
-		_errHandler.recover($this, re);
+	catch (RecognitionException $re) {
+		$_localctx->exception = $re;
+		$this->_errHandler->reportError($this, $re);
+		$this->_errHandler->recover($this, $re);
 	}
 	finally {
 		<finallyAction>
-		unrollRecursionContexts($_parentctx);
+		$this->unrollRecursionContexts($_parentctx);
 	}
 	return $_localctx;
 }
@@ -489,7 +513,7 @@ $this->_errHandler->sync($this);
 <preamble; separator="\n">
 $this->switch ($this->_input->LA(1)) {
 <choice.altLook,alts:{look,alt| <cases(ttypes=look)>
-	<alt>
+	<alt> /* TODO ALT */
 	break;}; separator="\n">
 default:
 	<error>
@@ -501,7 +525,7 @@ $this->setState(<choice.stateNumber>);
 $this->_errHandler->sync($this);
 switch ($this->_input->LA(1)) {
 <choice.altLook,alts:{look,alt| <cases(ttypes=look)>
-	<alt>
+	<alt> /* TODO ALT */
 	break;}; separator="\n">
 default:
 	break;
@@ -552,7 +576,7 @@ $this->_errHandler->sync($this);
 switch ( $this->getInterpreter()->adaptivePredict($this->_input,<choice.decision>,$this->_ctx) ) {
 <alts:{alt |
 case <i>:
-	<alt>
+	<alt> /* TODO ALT */
 	break;}; separator="\n">
 }
 >>
@@ -563,7 +587,7 @@ $this->_errHandler->sync($this);
 switch ( $this->getInterpreter()$this->adaptivePredict($this->_input,<choice.decision>,$this->_ctx) ) {
 <alts:{alt |
 case <i><if(!choice.ast.greedy)>+1<endif>:
-	<alt>
+	<alt> /* TODO ALT */
 	break;}; separator="\n">
 }
 >>
@@ -591,7 +615,7 @@ do {
 	switch ($_alt) {
 	<alts:{alt|
 case <i><if(!choice.ast.greedy)>+1<endif>:
-	<alt>
+	<alt> /* TODO ALT */
 	break;}; separator="\n">
 	default:
 		<error>
@@ -640,12 +664,12 @@ cases(ttypes) ::= <<
 
 InvokeRule(r, argExprsChunks) ::= <<
 $this->setState(<r.stateNumber>);
-<if(r.labels)><r.labels:{l | <labelref(l)> = }><endif><r.name>(<if(r.ast.options.p)><r.ast.options.p><if(argExprsChunks)>,<endif><endif><argExprsChunks>);
+<if(r.labels)><r.labels:{l | $this-><labelref(l)> = }><endif>$this-><r.name>(<if(r.ast.options.p)><r.ast.options.p><if(argExprsChunks)>,<endif><endif><argExprsChunks>);
 >>
 
 MatchToken(m) ::= <<
 $this->setState(<m.stateNumber>);
-<if(m.labels)><m.labels:{l | <labelref(l)> = }><endif>$this->match(<m.name>);
+<if(m.labels)><m.labels:{l | $this-><labelref(l)> = }><endif>$this->match(self::<m.name>);
 >>
 
 MatchSet(m, expr, capture) ::= "<CommonSetStuff(m, expr, capture, false)>"
@@ -722,15 +746,15 @@ TokenPropertyRef_channel(t) ::= "(<ctx(t)>.<t.label>!=null?<ctx(t)>.<t.label>.ge
 TokenPropertyRef_index(t) ::= "(<ctx(t)>.<t.label>!=null?<ctx(t)>.<t.label>.getTokenIndex():0)"
 TokenPropertyRef_int(t) ::= "(<ctx(t)>.<t.label>!=null?Integer.valueOf(<ctx(t)>.<t.label>.getText()):0)"
 
-RulePropertyRef_start(r) ::= "(<ctx(r)>.<r.label>!=null?(<ctx(r)>.<r.label>.start):null)"
-RulePropertyRef_stop(r)	 ::= "(<ctx(r)>.<r.label>!=null?(<ctx(r)>.<r.label>.stop):null)"
-RulePropertyRef_text(r)	 ::= "(<ctx(r)>.<r.label>!=null?_input.getText(<ctx(r)>.<r.label>.start,<ctx(r)>.<r.label>.stop):null)"
+RulePropertyRef_start(r) ::= "(<ctx(r)>.<r.label>!=null?(<ctx(r)>-><r.label>->start):null)"
+RulePropertyRef_stop(r)	 ::= "(<ctx(r)>.<r.label>!=null?(<ctx(r)>-><r.label>->stop):null)"
+RulePropertyRef_text(r)	 ::= "(<ctx(r)>.<r.label>!=null?_input->getText(<ctx(r)>-><r.label>->start,<ctx(r)>-><r.label>->stop):null)"
 RulePropertyRef_ctx(r)	 ::= "<ctx(r)>.<r.label>"
 RulePropertyRef_parser(r)	 ::= "$this"
 
-ThisRulePropertyRef_start(r) ::= "$_localctx.start"
-ThisRulePropertyRef_stop(r)	 ::= "$_localctx.stop"
-ThisRulePropertyRef_text(r)	 ::= "_input.getText($_localctx.start, _input.LT(-1))"
+ThisRulePropertyRef_start(r) ::= "$_localctx->start"
+ThisRulePropertyRef_stop(r)	 ::= "$_localctx->stop"
+ThisRulePropertyRef_text(r)	 ::= "$this->_input->getText($_localctx->start, _input->LT(-1))"
 ThisRulePropertyRef_ctx(r)	 ::= "$_localctx"
 ThisRulePropertyRef_parser(r)	 ::= "$this"
 
@@ -750,7 +774,7 @@ ContextTokenGetterDecl(t)      ::= <<
     /**
      * @return TerminalNode
      */
-    public function <t.name>() { return $this->getToken(<parser.name>.<t.name>, 0); }
+    public function <t.name>() : TerminalNode { return $this->getToken(<parser.name>.<t.name>, 0); }
 >>
 ContextTokenListGetterDecl(t)  ::= <<
     /**
@@ -762,7 +786,7 @@ ContextTokenListIndexedGetterDecl(t)  ::= <<
 /**
  * @return TerminalNode
  */
-public function <t.name>(int i) {
+public function <t.name>(int i) : TerminalNode {
 	return $this->getToken(<parser.name>.<t.name>, i);
 }
 >>
@@ -770,7 +794,7 @@ ContextRuleGetterDecl(r)       ::= <<
 /**
  * @return <r.ctxName>
  */
-public function  <r.name>() {
+public function <r.name>() : <r.ctxName> {
 	return $this->getRuleContext(<r.ctxName>::class,0);
 }
 >>
@@ -787,8 +811,8 @@ ContextRuleListIndexedGetterDecl(r)   ::= <<
  * @param int $i
  * @return <r.ctxName>
  */
-public function <r.name>($i) {
-	return $this->getRuleContext(<r.ctxName>::class,i);
+public function <r.name>(int $i) : <r.ctxName> {
+	return $this->getRuleContext(<r.ctxName>::class, $i);
 }
 >>
 
@@ -830,7 +854,7 @@ class <struct.name> extends <if(contextSuperClass)><contextSuperClass><else>Pars
         parent::__construct($parent, $invokingState);
         <struct.ctorAttrs:{a | $this-><a.name> = <a.name>;}; separator="\n">
     }
-    public function getRuleIndex() { return RULE_<struct.derivedFromName>; }
+    public function getRuleIndex() { return self::RULE_<struct.derivedFromName>; }
     <if(struct.provideCopyFrom)> <! don't need copy unless we have subclasses !>
     public function __construct() { }
     /**
@@ -894,9 +918,10 @@ labelref(x) ::= "<if(!x.isLocal)>((<x.ctx.name>)$_localctx).<endif><x.name>"
 ctx(actionChunk) ::= "((<actionChunk.ctx.name>)$_localctx)"
 
 // used for left-recursive rules
-recRuleAltPredicate(ruleName,opPrec)  ::= "precpred(_ctx, <opPrec>)"
-recRuleSetReturnAction(src,name)	  ::= "$<name>=$<src>.<name>;"
-recRuleSetStopToken()                 ::= "_ctx.stop = _input.LT(-1);"
+// TODO Figure out why $ had to be escaped for this next rule
+recRuleAltPredicate(ruleName,opPrec)  ::= "\$this->precpred(\$this->_ctx, <opPrec>)"
+recRuleSetReturnAction(src,name)	  ::= "$<name>=$<src>-><name>;"
+recRuleSetStopToken()                 ::= "$this->_ctx->stop = $this->_input->LT(-1);"
 
 recRuleAltStartAction(ruleName, ctxName, label, isListLabel) ::= <<
 $_localctx = new <ctxName>Context($_parentctx, $_parentState);
@@ -908,7 +933,7 @@ $_localctx.<label> = $_prevctx;
 <endif>
 <endif>
 <if(label)>$_localctx.<label> = $_prevctx;<endif>
-pushNewRecursionContext($_localctx, $_startState, RULE_<ruleName>);
+pushNewRecursionContext($_localctx, $_startState, self::RULE_<ruleName>);
 >>
 
 recRuleLabeledAltStartAction(ruleName, currentAltLabel, label, isListLabel) ::= <<
@@ -920,7 +945,7 @@ $_localctx = new <currentAltLabel; format="cap">Context(new <ruleName; format="c
 ((<currentAltLabel; format="cap">Context)$_localctx).<label> = $_prevctx;
 <endif>
 <endif>
-pushNewRecursionContext($_localctx, $_startState, RULE_<ruleName>);
+pushNewRecursionContext($_localctx, $_startState, self::RULE_<ruleName>);
 >>
 
 recRuleReplaceContext(ctxName) ::= <<
@@ -966,7 +991,7 @@ class <lexer.name> extends <superClass; null="Lexer"> {
 	/**
 	 * @var PredictionContextCache
 	 */
-	protected static $_sharedContextCache = new PredictionContextCache();
+	protected static $_sharedContextCache;
 
 	protected static function getSharedContextCache(){
 		if(is_null(self::$_sharedContextCache)){
