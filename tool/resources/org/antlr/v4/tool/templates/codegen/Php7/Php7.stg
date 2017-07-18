@@ -442,9 +442,9 @@ LeftRecursiveRuleFunction(currentRule,args,code,locals,ruleCtx,altLabelCtxs,
 /**
  * @return <currentRule.ctxType>
  * @throws RecognitionException
- * @todo Fix issue w/ no overloading in PHP
+ * @todo Fix issue w/ no overloading in PHP, added Initial_prefix for now, see what fails
  */
-public final<endif> function <currentRule.name>(<args; separator=", ">) : <currentRule.ctxType>
+public final<endif> function initial_<currentRule.name>(<args; separator=", ">) : <currentRule.ctxType>
 {
 	return <currentRule.name>(0<currentRule.args:{a | , <a.name>}>);
 }
@@ -993,18 +993,16 @@ class <lexer.name> extends <superClass; null="Lexer"> {
 	 */
 	protected static $_sharedContextCache;
 
-	protected static function getSharedContextCache(){
+	protected static function getSharedContextCache() : PredictionContextCache{
 		if(is_null(self::$_sharedContextCache)){
 			self::$_sharedContextCache = new PredictionContextCache();
 		}
 		return self::$_sharedContextCache;
 	}
 
-	/**
-	 * @var int
-	 */
-	public static
-		<lexer.tokens:{k | $<k>=<lexer.tokens.(k)>}; separator=", ", wrap, anchor>;
+
+	<lexer.tokens:{k | public const <k>=<lexer.tokens.(k)>}; separator=";\n", anchor>;
+
 	<if(lexer.channels)>
 	/**
 	 * @var int
